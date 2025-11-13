@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhisperPages — Your Book Haven</title>
+
+<!-- Internal CSS -->
+<style>
+  :root{
+    --bg:#f8f5f0; --card:#fff; --accent:#8B5A2B; --accent-2:#5a3ea6;
+    --muted:#6f6b6a; --success:#27ae60; --radius:12px; --shadow:0 10px 30px rgba(0,0,0,0.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family: "Poppins", system-ui, Arial; background:linear-gradient(180deg,#fbfaf9,#f2efe9); color:#332b2b; -webkit-font-smoothing:antialiased; padding-bottom:64px;}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- NAVBAR ---------- */
+  .navbar{
+    position:fixed; top:0; left:0; right:0; height:72px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(90deg,var(--accent),#A67B5B); box-shadow:0 6px 20px rgba(0,0,0,0.08); z-index:1200;
+  }
+  .nav-inner{width:100%; max-width:1200px; display:flex; align-items:center; gap:12px; padding:8px 18px; justify-content:space-between;}
+  .brand{display:flex;align-items:center;gap:12px;color:#fff;font-weight:700;font-size:1.15rem;font-family: "Playfair Display", serif;}
+  .brand img{width:42px;height:42px;border-radius:8px;object-fit:cover;box-shadow:var(--shadow)}
+  .nav-left{display:flex;align-items:center;gap:12px}
+  .search-input{width:340px; max-width:40vw;}
+  .search-input input{width:100%;padding:10px 14px;border-radius:999px;border:none;font-size:.95rem}
+  .nav-actions{display:flex;align-items:center;gap:10px}
+  .btn{background:var(--accent-2);color:#fff;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600;box-shadow:0 8px 18px rgba(90,62,166,0.12)}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.18);color:#fff;padding:8px 10px;border-radius:10px}
+  .hamburger{display:none;background:transparent;border:none;color:#fff;font-size:20px}
+
+  /* ---------- NAV LINK STYLES (Home / Writers) ---------- */
+/* New class for top nav links that need color + hover + active states */
+.nav-link {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.88);          /* default color (white slightly muted) */
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+/* Hover: subtle lift + darker bg + text brighten */
+.nav-link:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.12);     /* soft translucent backdrop */
+  color: #fff;                            /* brighter text on hover */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+/* Active (current page) styling — uses accent color */
+.nav-link.active {
+  background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(90,62,166,0.12);
+  position: relative;
+}
+
+/* Accent underline marker for active (thin) */
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -6px;
+  height: 3px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  opacity: 0.95;
+}
+
+/* Focus (keyboard accessibility) */
+.nav-link:focus {
+  outline: 3px solid rgba(90,62,166,0.16);
+  outline-offset: 3px;
+}
+
+
+  /* ---------- MAIN LAYOUT ---------- */
+  .wrap{max-width:1200px;margin:92px auto 40px;padding:0 18px}
+  .hero{padding:26px;border-radius:14px;background:linear-gradient(180deg,rgba(139,90,43,0.06),rgba(90,62,166,0.03));box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .hero h1{font-family:'Playfair Display',serif;color:var(--accent);font-size:1.9rem}
+  .hero p{color:var(--muted)}
+
+  /* ---------- CONTROLS ---------- */
+  .controls{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:var(--shadow)}
+  .select, .range-wrap{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px}
+  select{border:none;padding:6px;background:transparent;font-weight:600}
+  input[type="range"]{width:200px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:8px 12px;border-radius:999px;background:rgba(0,0,0,0.05);cursor:pointer;font-weight:600}
+  .chip.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white}
+
+  /* ---------- GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+  .book{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .18s ease}
+  .book:hover{transform:translateY(-8px)}
+  .cover{height:260px;overflow:hidden}
+  .cover img{width:100%;height:100%;object-fit:cover;display:block}
+  .meta{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .title{font-weight:700;font-family:'Playfair Display',serif}
+  .author{color:var(--muted);font-size:.95rem}
+  .desc{color:#4a4444;font-size:.95rem;margin-top:6px;flex:1}
+  .price-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+  .price{color:var(--success);font-weight:800}
+  .rating{color:#f1c40f;font-weight:800}
+  .actions{display:flex;gap:8px;margin-top:10px}
+  .btn-sm{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+
+  /* ---------- CART DRAWER ---------- */
+  .cart-btn{position:relative}
+  .badge{position:absolute;top:-8px;right:-8px;background:#ff5a5a;color:#fff;border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:12px}
+  .drawer{position:fixed;right:18px;top:86px;width:360px;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.18);z-index:1300;display:none}
+  .drawer.active{display:block}
+  .cart-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.06)}
+  .cart-item img{width:56px;height:82px;object-fit:cover;border-radius:6px}
+  .qty-controls{display:flex;gap:6px;align-items:center}
+  .qty-controls button{padding:6px 8px;border-radius:6px;border:none;background:#eee;cursor:pointer}
+
+  /* ---------- WRITERS PAGE ---------- */
+  .writers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+  .writer{background:var(--card);padding:14px;border-radius:12px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start}
+  .writer img{width:96px;height:96px;border-radius:8px;object-fit:cover}
+  .writer h4{margin-bottom:6px}
+  .writer p{color:var(--muted);font-size:.95rem}
+
+  /* ---------- MODALS ---------- */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:1400}
+  .modal.active{display:flex}
+  .modal-card{width:92%;max-width:520px;background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow)}
+  .close{float:right;border:none;background:transparent;font-size:20px;cursor:pointer}
+
+  /* ---------- FOOTER ---------- */
+  footer{margin-top:30px;text-align:center;color:var(--muted);font-size:.95rem;padding:20px 0}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}.writers-grid{grid-template-columns:repeat(2,1fr)}.search-input{width:220px}}
+  @media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.brand span{display:none}.search-input{display:none}.hamburger{display:block}}
+  @media(max-width:480px){.grid{grid-template-columns:1fr}.writers-grid{grid-template-columns:1fr}.hero{flex-direction:column;align-items:flex-start}}
+
+/* ---------- ADD BOOK FLOATING BUTTON ---------- */
+.add-book-btn {
+  position: fixed;
+  top: 88px; /* just below navbar */
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+  z-index: 1500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.add-book-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+@media (max-width: 600px) {
+  .add-book-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    right: 18px;
+    top: 80px;
+  }
+}
+
+
+ 
+
+
+/* Hover animation — lift, glow, and cart slide */
+.book .btn-sm:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 12px 25px rgba(108, 99, 255, 0.4);
+  background: linear-gradient(135deg, #7f74ff, #b39ddb);
+}
+
+/* Cart emoji motion */
+.book .btn-sm:hover::before {
+  transform: translateX(6px) rotate(-8deg);
+}
+
+/* Active (clicked) state */
+.book .btn-sm:active {
+  transform: scale(0.96);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus for keyboard users */
+.book .btn-sm:focus {
+  outline: 3px solid rgba(108, 99, 255, 0.3);
+  outline-offset: 3px;
+}
+
+
+/* ---------- SUPPORT BUTTON COLOR + HOVER ---------- */
+.btn-ghost[onclick*="openSupport"] {
+  color: #ff8a65; /* new color (soft orange tone) */
+  font-weight: 600;
+  transition: color 0.25s ease, transform 0.2s ease;
+}
+
+/* Hover effect */
+.btn-ghost[onclick*="openSupport"]:hover {
+  color: #ff5722; /* deeper orange on hover */
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Optional: add subtle underline when hovered */
+.btn-ghost[onclick*="openSupport"]:hover::after {
+  content: "";
+  display: block;
+  margin: 3px auto 0;
+  width: 50%;
+  height: 2px;
+  border-radius: 4px;
+  background-color: #ff5722;
+  transition: width 0.3s ease;
+}
+
+/* smooth underline animation */
+.btn-ghost[onclick*="openSupport"]:hover::after {
+  width: 70%;
+}
+
+
+
+/* ---------- AUTH (login/register) styles ---------- */
+.auth-card { max-width:520px; width:92%; padding:18px; box-shadow:var(--shadow); border-radius:12px; }
+@media (max-width:600px){
+  .auth-card { max-width:92%; padding:14px; border-radius:10px; }
+  .auth-card input { font-size:0.95rem; }
+}
+
+/* Improve inputs consistently */
+.auth-card input, .auth-card textarea { width:100%; box-sizing:border-box; font-family:inherit; }
+
+/* Better buttons inside auth forms */
+.auth-card .btn { padding:10px 14px; border-radius:8px; font-weight:700; }
+.auth-card .btn-ghost { padding:8px 12px; border-radius:8px; }
+
+/* Small visual improvement for auth modal header */
+#authTitle { margin-top:0; color:var(--accent-2); font-family:'Playfair Display',serif; }
+
+/* When modal is open reduce body scroll (we keep existing .modal behavior) */
+.modal.active { display:flex; }
+
+/* Nav auth elements responsive tweak */
+@media (max-width:760px){
+  #authDisplay { display:none !important; } /* hide greeting on very small screens to save space */
+  #loginBtn, #logoutBtn { padding:8px 10px; font-size:0.95rem; }
+}
+
+
+
+
+
+/* -------------------------------------------------
+   LOGIN / LOGOUT BUTTONS – same look as Home / Writers
+   ------------------------------------------------- */
+
+/* 1. Base style (same as .nav-link) */
+#loginBtn,
+#logoutBtn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.88);          /* muted white – same as Home/Writers */
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .18s ease,
+              background .18s ease,
+              color .18s ease,
+              box-shadow .18s ease;
+}
+
+/* 2. Hover – lift + backdrop + brighter text */
+#loginBtn:hover,
+#logoutBtn:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+/* 3. Active (when modal is open) – underline marker */
+#loginBtn.active,
+#logoutBtn.active {
+  background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(90,62,166,0.12);
+  position: relative;
+}
+#loginBtn.active::after,
+#logoutBtn.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -6px;
+  height: 3px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  opacity: 0.95;
+}
+
+/* 4. Keyboard focus */
+#loginBtn:focus,
+#logoutBtn:focus {
+  outline: 3px solid rgba(90,62,166,0.16);
+  outline-offset: 3px;
+}
+
+
+
+
+
+
+/* ---------- LOGO HOVER EFFECT ---------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  font-family: "Playfair Display", serif;
+  transition: transform 0.22s ease, color 0.22s ease;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+/* Hover: lift + subtle glow + brighter text */
+.brand:hover {
+  transform: translateY(-4px);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo image: subtle scale + shadow on hover */
+.brand img {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.brand:hover img {
+  transform: scale(1.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: Add a soft underline accent on hover */
+.brand:hover::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -8px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  border-radius: 6px;
+  opacity: 0.8;
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="brand">
+        <img src="logo.svg" alt="WhisperPages Logo" width="40">
+        <span>WhisperPages</span>
+      </div>
+
+      <div class="search-input card" id="searchBox">
+        <input id="search" placeholder="Search by title, author or description...">
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn-ghost nav-link" onclick="navigateTo('home')">Home</button>
+      <button class="btn-ghost nav-link" onclick="navigateTo('writers')">Writers</button>
+
+      <!-- <button class="btn-ghost" onclick="navigateTo('home')">Home</button>
+      <button class="btn-ghost" onclick="navigateTo('writers')">Writers</button> -->
+      <div class="cart-btn">
+        <button class="btn" onclick="toggleCart()">Cart 🛒</button>
+        <div id="cartBadge" class="badge" style="display:none">0</div>
+      </div>
+      <span id="authDisplay" style="display:none;margin-left:8px;font-weight:700;color:#fff"></span>
+     <button id="loginBtn" class="btn-ghost" onclick="openAuthModal('login')" style="margin-left:8px">Login</button>
+     <button id="logoutBtn" class="btn-ghost" onclick="logout()" style="margin-left:8px;display:none">Logout</button>
+
+      <button class="hamburger" id="menuToggle" aria-label="menu" onclick="toggleMenu()">☰</button>
+     
+    </div>
+  </div>
+</nav>
+
+
+
+<!-- PAGE WRAPPER -->
+<main class="wrap" id="app">
+
+  <!-- HOME PAGE -->
+  <section id="homePage">
+    <div class="hero">
+      <div>
+        <h1>Welcome, Reader!</h1>
+        <p>Where every page whispers a story — browse, filter, and add to cart.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn" onclick="document.getElementById('search').focus()">Browse Books</button>
+        <button class="btn-ghost" onclick="openSupport()">Support</button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="card select">
+        <label for="sort" style="font-weight:700;margin-right:8px;color:var(--muted)">Sort</label>
+        <select id="sort">
+          <option value="featured">Featured</option>
+          <option value="title-asc">Title A → Z</option>
+          <option value="title-desc">Title Z → A</option>
+          <option value="price-asc">Price ↑</option>
+          <option value="price-desc">Price ↓</option>
+          <option value="rating-desc">Top Rated</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700;color:var(--muted);margin-bottom:6px">Categories</div>
+        <div class="chips" id="categoryChips"></div>
+      </div>
+
+      <div class="card range-wrap" style="align-items:center">
+        <div style="font-weight:700;color:var(--muted);margin-right:8px">Max ₹</div>
+        <input type="range" id="priceRange" min="99" max="1499" value="1499" oninput="updatePriceLabel()">
+        <div id="priceLabel" style="font-weight:800;color:var(--accent-2)">₹1499</div>
+      </div>
+    </div>
+
+
+
+    
+
+    <!-- Books grid -->
+    <section class="grid" id="booksGrid" aria-live="polite"></section>
+
+    <div id="noResults" style="display:none;margin-top:18px" class="card">No books matched your filters.</div>
+  </section>
+
+  <!-- WRITERS PAGE -->
+  <section id="writersPage" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-family:'Playfair Display',serif;color:var(--accent)">Writers</h2>
+      <button class="btn-ghost" onclick="navigateTo('home')">Back to Books</button>
+    </div>
+
+    <div class="writers-grid" id="writersGrid"></div>
+
+    <h3 style="margin-top:22px;font-family:'Playfair Display',serif;color:var(--accent)">Books by selected writer</h3>
+    <div id="writerBooks" class="grid" style="margin-top:12px"></div>
+  </section>
+
+  <footer>© <span id="year"></span> WhisperPages · Made with ❤️</footer>
+</main>
+
+<!-- CART DRAWER -->
+<aside class="drawer" id="cartDrawer" aria-hidden="true">
+  <h3 style="margin:0 0 8px 0">Your Cart</h3>
+  <div id="cartItems"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+    <div style="font-weight:800">Total</div>
+    <div id="cartTotal" style="font-weight:900;color:var(--accent-2)">₹0</div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn" onclick="checkout()">Checkout</button>
+    <button class="btn-ghost" onclick="clearCart()">Clear</button>
+  </div>
+</aside>
+
+<!-- Floating Add Book Button -->
+<button class="add-book-btn" id="addBookBtn" title="Add a new book" onclick="openAddBookForm()">＋</button>
+
+
+<!-- AUTH MODALS (Login / Register) -->
+<div class="modal" id="authModal" aria-hidden="true">
+  <div class="modal-card auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button class="close" onclick="closeAuth()">×</button>
+    <h3 id="authTitle">Login</h3>
+
+    <!-- container to swap login / register -->
+    <div id="authContainer">
+      <!-- Login form (default) -->
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <input id="loginUsername" type="text" placeholder="Username" style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="loginEmail" type="email" placeholder="Email" style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="loginPass" type="password" placeholder="Password" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" type="submit">Login</button>
+          <button type="button" class="btn-ghost" onclick="showRegister()">New? Register</button>
+        </div>
+      </form>
+
+      <!-- Register form (hidden initially) -->
+      <form id="registerForm" style="display:none;flex-direction:column;gap:10px;margin-top:8px">
+        <input id="regUsername" placeholder="Username" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="regEmail" type="email" placeholder="Email" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="regPass" type="password" placeholder="Password (min 6 chars)" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn" type="submit">Create Account</button>
+          <button type="button" class="btn-ghost" onclick="showLogin()">Have account? Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- SUPPORT Modal -->
+<div class="modal" id="supportModal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="close" onclick="closeSupport()">×</button>
+    <h3>Contact Support</h3>
+    <form id="supportForm">
+      <input id="sname" placeholder="Your name" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #eee" required>
+      <input id="semail" type="email" placeholder="Email" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #eee" required>
+      <textarea id="smsg" placeholder="Describe issue" rows="4" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #eee" required></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn" type="submit">Send</button>
+        <button class="btn-ghost" type="button" onclick="closeSupport()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+<!-- Internal JS -->
+<script>
+/* -------------------------
+   Data (books + writers)
+   ------------------------- */
+const BOOKS = [
+  {id:1, title:"The Silent Patient", author:"Alex Michaelides", price:499, rating:4.6, category:"Mystery", img:"images/thesilent.jpg", desc:"A psychological thriller about a woman's refusal to speak after a violent act."},
+  {id:2, title:"Atomic Habits", author:"James Clear", price:399, rating:4.7, category:"Non-Fiction", img:"images/atomic habits.jpg", desc:"Tiny changes, remarkable results — a practical guide to habit-building."},
+  {id:3, title:"It Ends With Us", author:"Colleen Hoover", price:299, rating:4.4, category:"Fiction", img:"images/itendswithus.jpg", desc:"A moving contemporary romance with deep emotional stakes."},
+  {id:4, title:"The Alchemist", author:"Paulo Coelho", price:249, rating:4.7, category:"Fiction", img:"images/thealchemist.jpg", desc:"A fable about following your dreams across deserts and ports."},
+  {id:5, title:"Ikigai", author:"Héctor García", price:349, rating:4.5, category:"Non-Fiction", img:"images/ikigai.jpeg", desc:"Discover your reason for being — insights from Okinawa."},
+  {id:6, title:"Dune", author:"Frank Herbert", price:549, rating:4.8, category:"Sci-Fi", img:"images/dune.jpeg", desc:"Epic science-fiction saga of politics, religion and desert spice."},
+  {id:7, title:"Becoming", author:"Michelle Obama", price:450, rating:4.6, category:"Biography", img:"images/michelleobama.jpg", desc:"A deeply personal memoir by the former First Lady."},
+  {id:8, title:"Rich Dad Poor Dad", author:"Robert Kiyosaki", price:420, rating:4.1, category:"Non-Fiction", img:"images/richdadpoordad.jpeg", desc:"Personal finance lessons and mindset for building wealth."}
+];
+
+const WRITERS = [
+  {id:'w1', name:"Alex Michaelides", bio:"British-Cypriot author of psychological thrillers.", img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop"},
+  {id:'w2', name:"James Clear", bio:"Writer focused on habits, decision-making, and continuous improvement.", img:"https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=400&auto=format&fit=crop"},
+  {id:'w3', name:"Colleen Hoover", bio:"Bestselling author of emotional contemporary romance novels.", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400&auto=format&fit=crop"},
+  {id:'w4', name:"Paulo Coelho", bio:"Brazilian lyricist and novelist, author of international fables.", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400&auto=format&fit=crop"},
+  {id:'w5', name:"Frank Herbert", bio:"Legendary science-fiction writer, creator of the Dune universe.", img:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400&auto=format&fit=crop"},
+  {id:'w6', name:"Michelle Obama", bio:"Lawyer, author and former First Lady of the United States.", img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop"}
+];
+
+/* -------------------------
+   State (cart & UI)
+   ------------------------- */
+// let state = {
+//   books: JSON.parse(JSON.stringify(BOOKS)), // working copy
+//   cart: JSON.parse(localStorage.getItem('wp_cart_v2')||'[]'),
+//   activeCategory: '',
+//   maxPrice: 1499,
+//   sort: 'featured',
+//   query: ''
+// };
+/* -------------------------
+   Persistent books (survive reload)
+   ------------------------- */
+const STORAGE_KEY = 'wp_books_v1';               // <-- our new key
+let persistentBooks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+// If there are no saved books, seed with the original list
+if (persistentBooks.length === 0) {
+  persistentBooks = JSON.parse(JSON.stringify(BOOKS));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(persistentBooks));
+}
+
+// Working state (books are now persistent)
+let state = {
+  books: persistentBooks,                       // <-- use persistent list
+  cart: JSON.parse(localStorage.getItem('wp_cart_v2')||'[]'),
+  activeCategory: '',
+  maxPrice: 1499,
+  sort: 'featured',
+  query: ''
+};
+
+/* -------------------------
+   Elements
+   ------------------------- */
+const booksGrid = document.getElementById('booksGrid');
+const categoryChips = document.getElementById('categoryChips');
+const priceRange = document.getElementById('priceRange');
+const priceLabel = document.getElementById('priceLabel');
+const cartDrawer = document.getElementById('cartDrawer');
+const cartItemsWrap = document.getElementById('cartItems');
+const cartTotalEl = document.getElementById('cartTotal');
+const cartBadge = document.getElementById('cartBadge');
+const writersGrid = document.getElementById('writersGrid');
+const writerBooks = document.getElementById('writerBooks');
+const noResults = document.getElementById('noResults');
+const searchInput = document.getElementById('search');
+
+/* -------------------------
+   Init
+   ------------------------- */
+document.getElementById('year').textContent = new Date().getFullYear();
+priceRange.addEventListener('input',()=>{ state.maxPrice = Number(priceRange.value); updatePriceLabel(); applyFilters(); });
+document.getElementById('sort').addEventListener('change', (e)=>{ state.sort = e.target.value; applyFilters(); });
+searchInput.addEventListener('input', (e)=>{ state.query = e.target.value.trim().toLowerCase(); applyFilters(); });
+document.getElementById('supportForm').addEventListener('submit', (e)=>{ e.preventDefault(); alert('Support request sent. Thank you!'); closeSupport(); });
+
+function updatePriceLabel(){ priceLabel.textContent = '₹' + priceRange.value; }
+
+/* -------------------------
+   Categories UI
+   ------------------------- */
+function uniqueCategories(){
+  const cats = new Set(state.books.map(b=>b.category||'Other'));
+  return Array.from(cats);
+}
+function renderCategories(){
+  categoryChips.innerHTML = '';
+  const all = document.createElement('button'); all.className='chip active'; all.textContent='All'; all.onclick = ()=>{ state.activeCategory=''; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); all.classList.add('active'); applyFilters(); };
+  categoryChips.appendChild(all);
+  uniqueCategories().forEach(cat=>{
+    const b = document.createElement('button'); b.className='chip'; b.textContent = cat; b.onclick = ()=>{
+      state.activeCategory = cat;
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active');
+      applyFilters();
+    };
+    categoryChips.appendChild(b);
+  });
+}
+
+/* -------------------------
+   Render Books
+   ------------------------- */
+function renderBooks(list){
+  booksGrid.innerHTML = '';
+  if(!list.length){ noResults.style.display='block'; return; } else { noResults.style.display='none'; }
+  list.forEach(b=>{
+    const el = document.createElement('article'); el.className='book';
+    el.innerHTML = `
+      <div class="cover"><img src="${b.img}" alt="${escape(b.title)}"></div>
+      <div class="meta">
+        <div>
+          <div class="title">${escape(b.title)}</div>
+          <div class="author">by ${escape(b.author)}</div>
+        </div>
+        <div class="desc">${escape(b.desc)}</div>
+        <div class="price-row">
+          <div>
+            <div class="price">₹${b.price}</div>
+            <div class="rating">★ ${b.rating}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="actions">
+              <button class="btn-sm btn" onclick="addToCart(${b.id})">Add to Cart</button>
+              <button class="btn-sm btn-ghost" onclick="viewBook(${b.id})">View</button>
+            </div>
+            <div style="margin-top:8px;color:var(--muted);font-weight:700">${b.category}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    booksGrid.appendChild(el);
+  });
+}
+
+/* -------------------------
+   Filters / Sort / Search
+   ------------------------- */
+function applyFilters(){
+  let out = state.books.filter(b=>{
+    if(state.activeCategory && b.category !== state.activeCategory) return false;
+    if(Number(b.price) > Number(state.maxPrice)) return false;
+    if(state.query){
+      const q = state.query;
+      return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || (b.desc||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  // sort
+  if(state.sort === 'title-asc') out.sort((a,b)=>a.title.localeCompare(b.title));
+  else if(state.sort === 'title-desc') out.sort((a,b)=>b.title.localeCompare(a.title));
+  else if(state.sort === 'price-asc') out.sort((a,b)=>a.price - b.price);
+  else if(state.sort === 'price-desc') out.sort((a,b)=>b.price - a.price);
+  else if(state.sort === 'rating-desc') out.sort((a,b)=> (b.rating||0) - (a.rating||0));
+  // featured -> original order
+
+  renderBooks(out);
+  updateCartUI();
+}
+
+/* -------------------------
+   Cart functions
+   ------------------------- */
+function saveCart(){ localStorage.setItem('wp_cart_v2', JSON.stringify(state.cart)); updateCartUI(); }
+function addToCart(bookId){
+  const found = state.cart.find(x=>x.id===bookId);
+  if(found) found.qty += 1; else state.cart.push({id:bookId, qty:1});
+  saveCart();
+  toggleCart(true);
+}
+function setQty(bookId, qty){
+  const idx = state.cart.findIndex(x=>x.id===bookId);
+  if(idx===-1) return;
+  if(qty <= 0) state.cart.splice(idx,1); else state.cart[idx].qty = qty;
+  saveCart();
+}
+function clearCart(){ state.cart=[]; saveCart(); }
+function checkout(){ if(state.cart.length===0){ alert('Cart is empty'); return } alert('Checkout — total ' + cartTotalEl.textContent); clearCart(); toggleCart(false); }
+
+function updateCartUI(){
+  // badge
+  const totalItems = state.cart.reduce((s,i)=>s+i.qty,0);
+  if(totalItems>0){ cartBadge.style.display='grid'; cartBadge.textContent = totalItems; } else cartBadge.style.display='none';
+
+  // list
+  cartItemsWrap.innerHTML = '';
+  if(state.cart.length === 0){ cartItemsWrap.innerHTML = '<div style="padding:14px;color:var(--muted)">Your cart is empty</div>'; cartTotalEl.textContent = '₹0'; return; }
+  let total = 0;
+  state.cart.forEach(ci=>{
+    const b = state.books.find(x=>x.id===ci.id);
+    if(!b) return;
+    total += b.price * ci.qty;
+    const row = document.createElement('div'); row.className='cart-item';
+    row.innerHTML = `
+      <img src="${b.img}" alt="${escape(b.title)}">
+      <div style="flex:1">
+        <div style="font-weight:800">${escape(b.title)}</div>
+        <div style="color:var(--muted);font-size:.95rem">by ${escape(b.author)}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div style="font-weight:800">₹${b.price}</div>
+          <div class="qty-controls">
+            
+            <button onclick="event.stopPropagation(); setQty(${b.id}, ${ci.qty - 1})">−</button>
+            <span style="min-width:26px;text-align:center">${ci.qty}</span>
+            
+            <button onclick="event.stopPropagation(); setQty(${b.id}, ${ci.qty + 1})">+</button>
+
+          </div>
+        </div>
+      </div>
+    `;
+    cartItemsWrap.appendChild(row);
+  });
+  cartTotalEl.textContent = '₹' + total.toFixed(0);
+}
+
+/* -------------------------
+   Cart drawer toggle
+   ------------------------- */
+function toggleCart(forceOpen){
+  if(forceOpen === true){ cartDrawer.classList.add('active'); cartDrawer.setAttribute('aria-hidden','false'); updateCartUI(); return; }
+  const active = cartDrawer.classList.toggle('active');
+  cartDrawer.setAttribute('aria-hidden', !active);
+  updateCartUI();
+}
+
+/* -------------------------
+   Writers page rendering
+   ------------------------- */
+function renderWriters(){
+  writersGrid.innerHTML = '';
+  WRITERS.forEach(w=>{
+    const el = document.createElement('div'); el.className='writer';
+    el.innerHTML = `
+      <img src="${w.img}" alt="${escape(w.name)}">
+      <div>
+        <h4>${escape(w.name)}</h4>
+        <p>${escape(w.bio)}</p>
+        <div style="margin-top:8px"><button class="btn-ghost" onclick="showWriterBooks('${escapeAttr(w.name)}')">See books</button></div>
+      </div>
+    `;
+    writersGrid.appendChild(el);
+  });
+}
+function showWriterBooks(writerName){
+  navigateTo('writers');
+  const list = state.books.filter(b=>b.author === writerName);
+  writerBooks.innerHTML = '';
+  if(list.length === 0){ writerBooks.innerHTML = '<div class="card">No books found for this writer.</div>'; return; }
+  list.forEach(b=>{
+    const el = document.createElement('article'); el.className='book';
+    el.innerHTML = `
+      <div class="cover"><img src="${b.img}" alt="${escape(b.title)}"></div>
+      <div class="meta">
+        <div class="title">${escape(b.title)}</div>
+        <div class="author">by ${escape(b.author)}</div>
+        <div class="desc">${escape(b.desc)}</div>
+        <div class="price-row">
+          <div class="price">₹${b.price}</div>
+          <div><button class="btn-sm btn" onclick="addToCart(${b.id})">Add to Cart</button></div>
+        </div>
+      </div>
+    `;
+    writerBooks.appendChild(el);
+  });
+}
+
+/* -------------------------
+   Navigation (single-file)
+   ------------------------- */
+function navigateTo(page){
+  if(page === 'writers'){
+    document.getElementById('homePage').style.display='none';
+    document.getElementById('writersPage').style.display='block';
+    renderWriters();
+    writerBooks.innerHTML = '';
+  } else {
+    document.getElementById('homePage').style.display='block';
+    document.getElementById('writersPage').style.display='none';
+    applyFilters();
+  }
+}
+
+/* -------------------------
+   View Book (simple modal)
+   ------------------------- */
+function viewBook(id){
+  const b = state.books.find(x=>x.id===id);
+  if(!b) return alert('Book not found');
+  const modal = document.createElement('div'); modal.className='modal active'; modal.innerHTML = `
+    <div class="modal-card">
+      <button class="close" onclick="document.body.removeChild(this.parentNode.parentNode)">×</button>
+      <div style="display:flex;gap:12px">
+        <img src="${b.img}" alt="${escape(b.title)}" style="width:140px;height:200px;object-fit:cover;border-radius:8px">
+        <div>
+          <h3 style="margin-top:0">${escape(b.title)}</h3>
+          <div style="color:var(--muted);margin-bottom:8px">by ${escape(b.author)}</div>
+          <div style="margin-bottom:10px">${escape(b.desc)}</div>
+          <div style="font-weight:800;color:var(--accent-2);margin-bottom:8px">₹${b.price}</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="addToCart(${b.id}); document.body.removeChild(this.parentNode.parentNode.parentNode.parentNode)">Add to Cart</button>
+            <button class="btn-ghost" onclick="document.body.removeChild(this.parentNode.parentNode.parentNode.parentNode)">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+/* -------------------------
+   Helpers
+   ------------------------- */
+function escape(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeAttr(s){ return String(s).replace(/"/g,'&quot;').replace(/'/g,"&#39;"); }
+
+/* -------------------------
+   Writers initial render & categories
+   ------------------------- */
+function init(){
+  renderCategories();
+  applyFilters();
+  renderWriters();
+  updateCartUI();
+
+  // Auto-open auth modal if not logged in (register if first time)
+  const auth = localStorage.getItem('auth');
+  if (auth) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    updateAuthUI(user.username);
+  } else {
+    openAuthModal(localStorage.getItem('user') ? 'login' : 'register');
+  }
+}
+init();
+
+/* -------------------------
+   Utility: menu toggle on small screens
+   ------------------------- */
+function toggleMenu(){
+  const box = document.getElementById('searchBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+/* -------------------------
+   Support modal helpers
+   ------------------------- */
+function openSupport(){ document.getElementById('supportModal').classList.add('active'); document.getElementById('supportModal').setAttribute('aria-hidden','false'); }
+function closeSupport(){ document.getElementById('supportModal').classList.remove('active'); document.getElementById('supportModal').setAttribute('aria-hidden','true'); }
+
+/* -------------------------
+   Close drawer when clicking outside
+   ------------------------- */
+document.addEventListener('click', (e)=>{
+  const drawer = document.getElementById('cartDrawer');
+  if(!drawer.contains(e.target) && !e.target.closest('.cart-btn') && drawer.classList.contains('active')) drawer.classList.remove('active');
+});
+
+/* -------------------------
+   Persist cart on unload
+   ------------------------- */
+window.addEventListener('beforeunload', ()=>{ localStorage.setItem('wp_cart_v2', JSON.stringify(state.cart)); });
+
+
+function openAddBookForm() {
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.innerHTML = `
+    <div class="modal-card">
+      <button class="close" onclick="document.body.removeChild(this.parentNode.parentNode)">×</button>
+      <h3 style="margin-top:0">Add New Book</h3>
+      <form id="addBookForm" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <input id="newTitle" placeholder="Title" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="newAuthor" placeholder="Author" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="newCategory" placeholder="Category" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        <input id="newPrice" type="number" placeholder="Price (₹)" min="1" required style="padding:10px;border-radius:8px;border:1px solid #ddd">
+        
+        <!-- Image: allow URL or file upload -->
+        <div style="display:flex;gap:8px;flex-direction:column">
+          <label style="font-weight:700;color:var(--muted)">Cover image (URL or upload)</label>
+          <input id="newImg" placeholder="Image URL (optional)" style="padding:10px;border-radius:8px;border:1px solid #ddd">
+          <input id="newImgFile" type="file" accept="image/*" style="padding:6px;border-radius:8px;border:1px solid #ddd">
+          <div id="imgPreview" style="display:none;margin-top:6px">
+            <div style="font-weight:700;margin-bottom:6px">Preview</div>
+            <img id="imgPreviewImg" src="" alt="preview" style="width:120px;height:160px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow)">
+          </div>
+        </div>
+
+        <textarea id="newDesc" placeholder="Description" rows="3" style="padding:10px;border-radius:8px;border:1px solid #ddd"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button type="submit" class="btn">Add</button>
+          <button type="button" class="btn-ghost" onclick="document.body.removeChild(this.parentNode.parentNode.parentNode.parentNode)">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const fileInput = modal.querySelector('#newImgFile');
+  const urlInput = modal.querySelector('#newImg');
+  const previewWrap = modal.querySelector('#imgPreview');
+  const previewImg = modal.querySelector('#imgPreviewImg');
+
+  // If user selects a file, convert to data URL and show preview
+  let uploadedDataUrl = '';
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (!f) { uploadedDataUrl = ''; previewWrap.style.display = 'none'; return; }
+    if (!f.type.startsWith('image/')) { alert('Please select an image file.'); fileInput.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      uploadedDataUrl = reader.result;
+      previewImg.src = uploadedDataUrl;
+      previewWrap.style.display = 'block';
+      // clear URL input because uploaded file takes precedence
+      urlInput.value = '';
+    };
+    reader.onerror = () => { alert('Failed to read file. Try another image.'); };
+    reader.readAsDataURL(f);
+  });
+
+  // If user types/pastes a URL, show a quick preview (but don't overwrite an uploaded file)
+  let urlPreviewTimeout;
+  urlInput.addEventListener('input', () => {
+    clearTimeout(urlPreviewTimeout);
+    uploadedDataUrl = ''; // if typing URL, uploaded file no longer used
+    fileInput.value = '';
+    const v = urlInput.value.trim();
+    if (!v) { previewWrap.style.display = 'none'; previewImg.src = ''; return; }
+    urlPreviewTimeout = setTimeout(() => {
+      const resolved = resolveImageUrl(v);
+      // quick check: set preview and attempt to load
+      previewImg.src = resolved;
+      previewImg.onload = () => { previewWrap.style.display = 'block'; };
+      previewImg.onerror = () => { previewWrap.style.display = 'none'; };
+    }, 250);
+  });
+
+  // Helper: attempts to return a direct usable image URL from common cases
+  function resolveImageUrl(raw) {
+    if (!raw) return raw;
+    const v = raw.trim();
+
+    // If looks like a Google Drive sharing link, convert to direct link
+    // patterns: https://drive.google.com/file/d/FILEID/view?usp=sharing
+    // or https://drive.google.com/open?id=FILEID
+    const driveFileMatch = v.match(/drive\.google\.com\/.*(?:\/d\/|open\?id=)([a-zA-Z0-9_-]{10,})/);
+    if (driveFileMatch) {
+      return `https://drive.google.com/uc?export=view&id=${driveFileMatch[1]}`;
+    }
+
+    // If it's a Dropbox share link, convert ?dl=0 to dl=1 (direct)
+    if (v.includes('dropbox.com')) {
+      return v.replace('?dl=0', '?raw=1').replace('?dl=1', '?raw=1');
+    }
+
+    // If it contains spaces or other characters, encode it
+    try {
+      // If it's already absolute (starts with http or data:) use encodeURI
+      if (/^(https?:|data:|\/\/)/i.test(v)) {
+        return encodeURI(v);
+      }
+      // Otherwise treat as relative path and encode
+      return encodeURI(v);
+    } catch (err) {
+      return v;
+    }
+  }
+
+  // Validate image by trying to load it — returns a Promise
+  function validateImageUrl(url) {
+    return new Promise((res) => {
+      if (!url) return res(false);
+      const img = new Image();
+      img.onload = () => res(true);
+      img.onerror = () => res(false);
+      img.src = url;
+      // In case browser caches a broken request, also protect with timeout
+      setTimeout(() => { /* no-op timeout to avoid indefinite waiting */ }, 1500);
+    });
+  }
+
+  // form handler
+  modal.querySelector('#addBookForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = modal.querySelector('#newTitle').value.trim();
+    const author = modal.querySelector('#newAuthor').value.trim();
+    const category = modal.querySelector('#newCategory').value.trim();
+    const price = parseFloat(modal.querySelector('#newPrice').value);
+    let imgCandidate = uploadedDataUrl || modal.querySelector('#newImg').value.trim();
+
+    if (!title || !author || !category || isNaN(price)) {
+      alert('Please fill all required fields correctly.');
+      return;
+    }
+
+    // If there is a URL, resolve common cases (Drive, Dropbox, spaces)
+    if (imgCandidate && !imgCandidate.startsWith('data:')) {
+      imgCandidate = resolveImageUrl(imgCandidate);
+      // Validate by trying to load it; if fails, let user know
+      const ok = await validateImageUrl(imgCandidate);
+      if (!ok) {
+        // fallback: ask user to check URL OR auto use placeholder
+        const usePlaceholder = confirm('Could not load the image URL you provided. Use a default cover image instead? (Choose Cancel to keep editing the URL)');
+        if (!usePlaceholder) return; // user continues editing
+        imgCandidate = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=900&auto=format&fit=crop';
+      }
+    }
+
+    // final fallback if nothing provided
+    if (!imgCandidate) {
+      imgCandidate = 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=900&auto=format&fit=crop';
+    }
+
+    const desc = modal.querySelector('#newDesc').value.trim() || 'No description available.';
+
+    const newBook = {
+      id: Date.now(),
+      title,
+      author,
+      category,
+      price,
+      rating: 0,
+      img: imgCandidate,
+      desc
+    };
+
+    // state.books.push(newBook);
+    // applyFilters();
+    // renderCategories();
+    // document.body.removeChild(modal);
+        state.books.push(newBook);
+    saveBooks();               // <-- NEW: persist immediately
+    applyFilters();
+    renderCategories();
+    document.body.removeChild(modal);
+  });
+}
+
+
+/* -------------------------
+   Save books to localStorage
+   ------------------------- */
+function saveBooks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.books));
+}
+
+
+/* -------------------------
+   Auth functions
+   ------------------------- */
+function openAuthModal(mode = 'login') {
+  document.getElementById('authModal').classList.add('active');
+  if (mode === 'register') {
+    showRegister();
+  } else {
+    showLogin();
+  }
+}
+
+function closeAuth() {
+  document.getElementById('authModal').classList.remove('active');
+}
+
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'flex';
+  document.getElementById('authTitle').textContent = 'Register';
+}
+
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'flex';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('authTitle').textContent = 'Login';
+}
+
+function updateAuthUI(username) {
+  document.getElementById('authDisplay').textContent = `Hi, ${username}!`;
+  document.getElementById('authDisplay').style.display = 'inline';
+  document.getElementById('loginBtn').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'inline';
+}
+
+function logout() {
+  localStorage.removeItem('auth');
+  document.getElementById('authDisplay').style.display = 'none';
+  document.getElementById('loginBtn').style.display = 'inline';
+  document.getElementById('logoutBtn').style.display = 'none';
+  openAuthModal('login'); // Optional: re-open login after logout
+}
+
+// Login submit handler
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const stored = JSON.parse(localStorage.getItem('user'));
+  if (!stored) {
+    alert('No account found. Please register.');
+    showRegister();
+    return;
+  }
+  const username = document.getElementById('loginUsername').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  if (!username && !email) {
+    alert('Please provide username or email.');
+    return;
+  }
+  let match = false;
+  if (username && username === stored.username && pass === stored.password) match = true;
+  if (email && email === stored.email && pass === stored.password) match = true;
+  if (match) {
+    localStorage.setItem('auth', 'true');
+    updateAuthUI(stored.username);
+    closeAuth();
+  } else {
+    alert('Incorrect credentials.');
+  }
+});
+
+// Register submit handler
+document.getElementById('registerForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value.trim();
+  if (!username || !email || !pass) {
+    alert('Please fill all fields.');
+    return;
+  }
+  if (pass.length < 6) {
+    alert('Password must be at least 6 characters.');
+    return;
+  }
+  const user = { username, email, password: pass };
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('auth', 'true');
+  updateAuthUI(username);
+  closeAuth();
+});
+
+
+function logout() {
+  localStorage.removeItem('auth');
+  document.getElementById('authDisplay').style.display = 'none';
+  document.getElementById('loginBtn').style.display = 'inline';
+  document.getElementById('logoutBtn').style.display = 'none';
+
+  // Show "Thank you" message
+  alert('Thank you for visiting.');
+
+  openAuthModal('login'); // Optional: re-open login after logout
+}
+
+
+
+</script>
+</body>
+</html>
